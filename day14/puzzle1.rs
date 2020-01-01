@@ -17,32 +17,48 @@ impl Ingredient {
     }
 }
 
-fn count_required_base_ingredients(
+fn count_required_ingredients(
     reactions: &HashMap<Ingredient, Vec<Ingredient>>,
     required_ingredient: &Ingredient,
-    needed_base: &mut HashMap<String, u32>,
-) {
-    println!("count for: {} {}", required_ingredient.name, required_ingredient.count);
+    reserve: &mut HashMap<String, u32>,
+) -> u32 {
+    let mut total = 0;
+    println!("reserve: {:?}", reserve);
+
+    let reserve_count = reserve.entry(required_ingredient.name.clone()).or_insert(0);
+    if *reserve_count >= required_ingredient.count {
+        *reserve_count -= required_ingredient.count;
+        return 0;
+    }
+
+    let really_needed = required_ingredient.count - *reserve_count;
+    *reserve_count = 0;
+    println!("to produce: {}({}) {} we need: ", required_ingredient.count, really_needed, required_ingredient.name);
+
     for (product, substrates) in reactions.iter() {
         if product.name == required_ingredient.name {
-            // if let Some(needed_base.entry()) count++ else return;
-            for (base_name, count) in needed_base.iter_mut() {
-                if *base_name == required_ingredient.name {
-                    println!("require {} {}", required_ingredient.name, required_ingredient.count);
-                    *count += required_ingredient.count;
-                    return;
+            for substrate in substrates.iter() {
+                //println!("{} really_needed: {}", required_ingredient.name, really_needed);
+
+                let number_of_reactions = (really_needed as f64 / product.count as f64).ceil() as u32;
+                let produced = number_of_reactions * substrate.count;
+                //let needed = (really_needed as f64 / product.count as f64).floor() as u32 * substrate.count;
+                let excess = number_of_reactions * product.count - really_needed;
+                println!("{} {}, excess: {} {}", produced, substrate.name, excess, required_ingredient.name);
+                *reserve.entry(required_ingredient.name.clone()).or_insert(0) += excess;
+
+
+                if substrate.name != "ORE" {
+                    // produced -> needed
+                    total += count_required_ingredients(reactions, &Ingredient::new(produced , &substrate.name), reserve);
+                } else {
+                    return produced;
                 }
             }
-
-            substrates.iter().for_each(|substrate| {
-                count_required_base_ingredients(
-                    reactions,
-                    &Ingredient::new((required_ingredient.count as f64 / product.count as f64).ceil() as u32 * substrate.count, &substrate.name),
-                    needed_base,
-                )
-            });
         }
     }
+
+    total
 }
 
 fn main() -> io::Result<()> {
@@ -54,10 +70,7 @@ fn main() -> io::Result<()> {
         Ingredient::new(split.next().unwrap().parse::<u32>().unwrap(), split.next().unwrap())
     };
 
-
-    let mut base_reactions = HashMap::new();
     let mut reactions = HashMap::new();
-    let mut needed_base = HashMap::new();
 
     for line in reader.lines() {
         let line = line.unwrap();
@@ -71,33 +84,12 @@ fn main() -> io::Result<()> {
         let product_str = split.next().unwrap();
         let product = parse_ingredient(product_str);
 
-        if substrates.len() == 1 && substrates[0].name == "ORE" {
-            base_reactions.insert(product.clone(), substrates);
-            needed_base.insert(product.name.clone(), 0);
-        } else {
-            reactions.insert(product, substrates);
-        }
+        reactions.insert(product, substrates);
     }
-    reactions.extend(base_reactions.clone());
 
     let required = Ingredient::new(1, "FUEL");
-
-    count_required_base_ingredients(&reactions, &required, &mut needed_base);
-
-    let mut total = 0;
-    for (name, needed_count) in needed_base.iter() {
-        //println!("{}: {}", name, count);
-        for (product, substrate) in base_reactions.iter() {
-            if *name == product.name {
-                println!(
-                    "needed: {}, product.count: {}, substrate.count: {}",
-                    needed_count, product.count, substrate[0].count
-                );
-                total += (*needed_count as f64 / product.count as f64).ceil() as u32
-                    * substrate[0].count;
-            }
-        }
-    }
+    let mut reserve = HashMap::new();
+    let total = count_required_ingredients(&reactions, &required, &mut reserve);
 
     println!("{}", total);
 
