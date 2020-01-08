@@ -179,6 +179,11 @@ fn build_graph(content: &str, portals: &HashMap<(usize, usize), PortalType>) -> 
                     weight += 1;
                 }
 
+                // passing through portal takes 1 step
+                if name != "ZZ" {
+                    weight += 1;
+                }
+
                 node.push(Edge {
                     name: name.to_string(),
                     weight,
@@ -284,16 +289,6 @@ fn main() {
         position.1 += 1;
     }
 
-    let mut graph = build_graph(&content, &portals);
-
-    for edges in graph.values_mut() {
-        for edge in edges.iter_mut() {
-            if edge.name != "ZZ" {
-                // passing through portal takes 1 step
-                edge.weight += 1;
-            }
-        }
-    }
-
+    let graph = build_graph(&content, &portals);
     println!("part 1: {}", dijkstra(&graph, "AA"));
 }
