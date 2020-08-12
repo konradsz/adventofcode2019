@@ -18,13 +18,15 @@ impl From<isize> for Mode {
     }
 }
 
+#[derive(Clone)]
 pub struct Intcode {
     memory: HashMap<usize, isize>,
     pc: usize,
     relative_base: isize,
     input: VecDeque<isize>,
-    output: Vec<isize>,
+    output: VecDeque<isize>,
     finished: bool,
+    paused: bool,
 }
 
 impl Intcode {
@@ -39,13 +41,16 @@ impl Intcode {
             pc: 0,
             relative_base: 0,
             input: VecDeque::new(),
-            output: Vec::new(),
+            output: VecDeque::new(),
             finished: false,
+            paused: false,
         }
     }
 
     pub fn run(&mut self) {
-        while !self.finished {
+        self.paused = false;
+
+        while !self.finished && !self.paused {
             let (opcode, mode_1, mode_2, mode_3) = self.decode_instruction();
             match opcode {
                 1 => self.process_1(mode_1, mode_2, mode_3),
@@ -95,13 +100,17 @@ impl Intcode {
     }
 
     fn process_3(&mut self, mode: Mode) {
-        let input = self.input.pop_front().unwrap();
-        self.write(mode, input);
+        if let Some(input) = self.input.pop_front() {
+            self.write(mode, input);
+        } else {
+            self.pc -= 1;
+            self.paused = true;
+        }
     }
 
     fn process_4(&mut self, mode: Mode) {
         let output = self.read(mode);
-        self.output.push(output);
+        self.output.push_back(output);
     }
 
     fn process_5(&mut self, mode_1: Mode, mode_2: Mode) {
@@ -210,7 +219,15 @@ impl Intcode {
         self.input.push_back(value);
     }
 
-    pub fn get_last_output(&self) -> Option<&isize> {
-        self.output.last()
+    pub fn get_first_output(&mut self) -> Option<isize> {
+        self.output.pop_front()
+    }
+
+    pub fn get_last_output(&mut self) -> Option<isize> {
+        self.output.pop_back()
+    }
+
+    pub fn finished(&self) -> bool {
+        self.finished
     }
 }
