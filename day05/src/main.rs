@@ -5,14 +5,14 @@ fn part_1(program: &[isize]) {
     let mut intcode = Intcode::new(program);
     intcode.add_input(1);
     intcode.run();
-    assert_eq!(Some(&13_346_482), intcode.get_last_output());
+    assert_eq!(Some(13_346_482), intcode.get_last_output());
 }
 
 fn part_2(program: &[isize]) {
     let mut intcode = Intcode::new(program);
     intcode.add_input(5);
     intcode.run();
-    assert_eq!(Some(&12_111_395), intcode.get_last_output());
+    assert_eq!(Some(12_111_395), intcode.get_last_output());
 }
 
 fn main() {
