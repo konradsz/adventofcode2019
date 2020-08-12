@@ -27,7 +27,7 @@ pub struct Intcode {
 }
 
 impl Intcode {
-    pub fn new(program: &Vec<isize>) -> Self {
+    pub fn new(program: &[isize]) -> Self {
         let mut initial_memory = HashMap::new();
         for (address, byte) in program.iter().enumerate() {
             initial_memory.insert(address, *byte);
