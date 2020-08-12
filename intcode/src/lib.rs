@@ -23,6 +23,7 @@ pub struct Intcode {
     pc: usize,
     relative_base: isize,
     input: VecDeque<isize>,
+    output: Vec<isize>,
     finished: bool,
 }
 
@@ -38,6 +39,7 @@ impl Intcode {
             pc: 0,
             relative_base: 0,
             input: VecDeque::new(),
+            output: Vec::new(),
             finished: false,
         }
     }
@@ -99,7 +101,7 @@ impl Intcode {
 
     fn process_4(&mut self, mode: Mode) {
         let output = self.read(mode);
-        println!("{}", output);
+        self.output.push(output);
     }
 
     fn process_5(&mut self, mode_1: Mode, mode_2: Mode) {
@@ -206,5 +208,9 @@ impl Intcode {
 
     pub fn add_input(&mut self, value: isize) {
         self.input.push_back(value);
+    }
+
+    pub fn get_last_output(&self) -> Option<&isize> {
+        self.output.last()
     }
 }
