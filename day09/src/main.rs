@@ -6,7 +6,7 @@ fn part_1(program: &[isize]) {
     intcode.add_input(1);
 
     intcode.run();
-    assert_eq!(Some(4288078517), intcode.get_last_output());
+    assert_eq!(Some(4_288_078_517), intcode.get_last_output());
 }
 
 fn part_2(program: &[isize]) {
@@ -14,7 +14,7 @@ fn part_2(program: &[isize]) {
     intcode.add_input(2);
 
     intcode.run();
-    assert_eq!(Some(69256), intcode.get_last_output());
+    assert_eq!(Some(69_256), intcode.get_last_output());
 }
 
 fn main() {
