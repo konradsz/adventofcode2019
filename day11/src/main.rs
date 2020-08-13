@@ -35,7 +35,6 @@ impl Robot {
     }
 
     fn run(&mut self) {
-        //self.intcode.add_input(1);
         while !self.intcode.finished() {
             let input = match self.get_tile() {
                 Color::Black => 0,
@@ -141,13 +140,13 @@ fn part_2(program: &[isize]) {
 }
 
 fn main() {
-    let contents = fs::read_to_string("input").expect("file not found");
-    let contents = contents.trim();
+    let content = fs::read_to_string("input").expect("file not found");
+    let content = content.trim();
 
-    let mut program = Vec::new();
-    for value in contents.split(',') {
-        program.push(value.parse::<isize>().unwrap());
-    }
+    let program: Vec<_> = content
+        .split(',')
+        .map(|value| value.parse::<isize>().unwrap())
+        .collect();
 
     part_1(&program);
     part_2(&program);

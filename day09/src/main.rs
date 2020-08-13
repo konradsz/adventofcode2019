@@ -21,10 +21,10 @@ fn main() {
     let content = fs::read_to_string("input").expect("file not found");
     let content = content.trim();
 
-    let mut program = Vec::new();
-    for value in content.split(',') {
-        program.push(value.parse::<isize>().unwrap());
-    }
+    let program: Vec<_> = content
+        .split(',')
+        .map(|value| value.parse::<isize>().unwrap())
+        .collect();
 
     part_1(&program);
     part_2(&program);
