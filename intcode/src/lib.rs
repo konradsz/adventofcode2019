@@ -219,6 +219,14 @@ impl Intcode {
         self.input.push_back(value);
     }
 
+    pub fn has_output(&self) -> bool {
+        !self.output.is_empty()
+    }
+
+    pub fn get_output(&self) -> &VecDeque<isize> {
+        &self.output
+    }
+
     pub fn get_first_output(&mut self) -> Option<isize> {
         self.output.pop_front()
     }
