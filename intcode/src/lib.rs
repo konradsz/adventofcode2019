@@ -26,7 +26,7 @@ pub struct Intcode {
     input: VecDeque<isize>,
     output: VecDeque<isize>,
     finished: bool,
-    paused: bool,
+    awaits_input: bool,
 }
 
 impl Intcode {
@@ -43,14 +43,19 @@ impl Intcode {
             input: VecDeque::new(),
             output: VecDeque::new(),
             finished: false,
-            paused: false,
+            awaits_input: false,
         }
     }
 
     pub fn run(&mut self) {
-        self.paused = false;
+        while !self.finished && !self.awaits_input {
+            self.execute_single_instruction();
+        }
+    }
 
-        while !self.finished && !self.paused {
+    pub fn execute_single_instruction(&mut self) {
+        if !self.finished && !self.awaits_input {
+            //self.awaits_input = false;
             let (opcode, mode_1, mode_2, mode_3) = self.decode_instruction();
             match opcode {
                 1 => self.process_1(mode_1, mode_2, mode_3),
@@ -104,7 +109,7 @@ impl Intcode {
             self.write(mode, input);
         } else {
             self.pc -= 1;
-            self.paused = true;
+            self.awaits_input = true;
         }
     }
 
@@ -216,6 +221,7 @@ impl Intcode {
     }
 
     pub fn add_input(&mut self, value: isize) {
+        self.awaits_input = false;
         self.input.push_back(value);
     }
 
@@ -237,5 +243,9 @@ impl Intcode {
 
     pub fn finished(&self) -> bool {
         self.finished
+    }
+
+    pub fn awaits_input(&self) -> bool {
+        self.awaits_input
     }
 }
